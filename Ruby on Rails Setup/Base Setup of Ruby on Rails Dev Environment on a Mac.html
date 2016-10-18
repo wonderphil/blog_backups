@@ -1,0 +1,67 @@
+<h1>Ruby on Rails</h1>
+Firstly setting this up on a MacBook Pro running OS Sierra. I like to have a few things installed first but they are not required.
+<br>
+<ul>
+<li>iTerm2 - good terminal app for mac - <a target="_blank" rel="nofollow" href="https://www.iterm2.com/">https://www.iterm2.com/</a></li>
+<li>Sublime Text 3 - Good Editor - <a target="_blank" rel="nofollow" href="https://www.sublimetext.com/3">https://www.sublimetext.com/3</a></li>
+<li>Growl - For notifications for the OS - <a target="_blank" rel="nofollow" href="http://growl.info/">http://growl.info/</a></li>
+<li>Pow - Pow is a zero-config Rack server for Mac OS X - <a target="_blank" rel="nofollow" href="http://pow.cx/">http://pow.cx/</a></li>
+</ul>
+<br>
+<h2>Prerequisites</h2>
+<h3>Xcode Command Line Tools</h3>
+Since Mavericks you haven't needed to install Xcode itself to be able to install the command line tools, now you can just run the below command, xcode command line tools is used for build tools and utilities.
+<br><pre class="line-numbers language-bash"><code>xcode-select --instal</code></pre>
+<br>
+<h3>Homebrew</h3>
+Package manager for Mac, you can use Mac ports but I wouldn't. There isn't much to do install, just follow the steps on the Homebrew site - <a target="_blank" rel="nofollow" href="http://brew.sh/">http://brew.sh/</a>
+<br><pre class="line-numbers language-bash"><code>/usr/bin/ruby -e "$(curl -fsSL "https://raw.githubusercontent.com/Homebrew/install/master/install)"</code></pre>
+<br>
+I always run <code class="language-bash">brew doctor</code> to make sure everything is installed correctly.  The only other thing I do is an update <code class="language-bash">brew update</code><br>
+<h3>Git and Github</h3>
+Now everyone should be using some sort of source code, so before we go to much further, lets install Git and connect to your Github account.  Git is simple, just do a brew install<br>
+<pre class="line-numbers language-bash"><code>brew install git</code></pre><br>
+I also Like to install Git completion, which is helpful<br>
+<pre class="line-numbers language-bash"><code>brew install bash-completion</code></pre>
+<br>For Git completion, you also need to add the following to your bash profile file <code>~/.bash_profile</code>
+<br><pre class="line-numbers language-bash">if [ -f $(brew --prefix)/etc/bash_completion ]; then
+    . $(brew --prefix)/etc/bash_completion
+  fi
+</pre>
+<br>Now we configure Git locally with your name and email address:
+<br><pre class="line-numbers language-bash"><code>git config --global user.name "Your Name Here"
+git config --global user.email "your_email@example.com"</code></pre>
+<br>Next part is to setup Github ssh keys, now if you don't have Github account, then go get one! To setup ssh keys, git hub has a nice little page, so I won't go through it, just follow the steps at <a target="_blank" rel="nofollow" href="https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/">https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/</a>
+<br>The one thing I would do is make sure you test the connection:
+<br><pre class="line-numbers language-bash"><code>ssh -T git@github.com</code></pre>
+<br>
+<h3>Ruby with RBENV</h3>
+Ruby is already installed with Mac OS, but its better to install it with a Ruby version manager like RVM or RBENV.  RBENV is simpler and more light and so I prefer it over RVM.  To install RBENV run the following:
+<br><pre class="line-numbers language-bash"><code>brew install rbenv ruby-build
+git clone https://github.com/sstephenson/rbenv-gem-rehash.git ~/.rbenv/plugins/rbenv-gem-rehash</code></pre>
+<br>Now you need to initialize rbenv by adding the following line to you bash profile <code>~/.bash_profile</code>
+<br><pre class="line-numbers language-bash"><code>export PATH="$HOME/.rbenv/bin:$PATH"
+ eval "$(rbenv init -)"</code></pre>
+<br>Now you should be ready for the install of Ruby by simply doing a rbenv install and the version number.  You might want to see what version is latest by using the <code>rbenv install -l</code>
+<br><pre class="line-numbers language-bash"><code>rbenv install 2.3.1
+rbenv global 2.3.1</code></pre>
+<br>
+<h3>Rails</h3>
+Last part is installing rails, now this can take some time do don't stress if it seems like nothing is happening.
+<br><pre class="line-numbers language-bash"><code>gem install rails</code></pre>
+<br>Now test everything is working by creating your first application:
+<br><pre class="line-numbers language-bash"><code>rails new first_app_name</code></pre>
+<br>
+Once the app has finished setting up create the symlink in the Pow folder if you installed Pow:
+<br><pre class="line-numbers language-bash"><code>cd ~/.pow
+ln -s /path/to/app</code></pre>
+<br> Then in you browser open the app using "app_name.dev"
+<br>You should now see the Rails Landing page.
+<br><img alt="Thumb screen shot 2016 10 18 at 34116 pm" src="/uploads/bootsy/image/84/large_Screen_Shot_2016-10-18_at_3.41.16_pm.png">
+<br>If you have an error then work back through the above and see if you have missed anything, then next best google the error. If you post the error below then I will try and help where I can.
+<br>
+<h2>Installing Postgresql DB - Optional</h2>
+<br>
+Now some might call this over kill and this is optional, but I like to install the same DB in my dev environment as whats in my production evironment.  So here I will install Postgresql.  In recent times Postgresql has released a Postgres.app, which makes it nice and easy to install the server on your mac - <a target="_blank" rel="nofollow" href="http://postgresapp.com/">http://postgresapp.com/</a>
+<br>Now because I like to use the command line tools as well I just add the following line to my bash profile <code class="language-bash">~/.bash_profile>
+<br><pre class="line-numbers language-bash"><code>export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin</code></pre>
