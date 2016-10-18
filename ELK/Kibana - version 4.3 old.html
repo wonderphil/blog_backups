@@ -1,0 +1,52 @@
+<h1>Kibana</h1>
+What is Kibana, simply it is just a UI front end that displays your data from elasticsearch. &nbsp;This allows sophisticated analytics in a very simple and easy way.
+<br><br>Below is a Kibana dashboard that I have found on google to give an example of what could be.<br><br><img alt="Thumb kibana 3 pfsense firewall dashboard 2" src="/uploads/bootsy/image/8/large_Kibana_3_pfSense_Firewall_dashboard_2.png">
+<br><br>
+<h2>Installing Kibana</h2>
+There a couple things we should do before installing Kibana. &nbsp;First we should setup a user and group that will run Kibana.
+<br><br>We will setup a&nbsp;user kibana and create a group called kibana
+<br>
+<pre><code>sudo  groupadd kibana
+sudo useradd -G kibana kibana
+</code></pre>
+<br>
+Now we download and unzip Kibana, also I like to move the Kibana files to a better place, so we will do that as well:
+<br><pre><code>sudo mkdir -p /opt/kibana
+curl -L -O https://download.elastic.co/kibana/kibana/kibana-4.3.1-linux-x64.tar.gz
+tar xvf kibana-4.3.1-linux-x64.tar.gz
+sudo cp -R ~/kibana-4.3.1-linux-x64/* /opt/kibana/
+sudo chown -R kibana /opt/kibana
+</code></pre>
+<br>
+Next step is to configure Kibana, we can do this by editing the yml configuration file:
+<br><pre><code>sudo nano /opt/kibana/config/kibana.yml</code></pre>
+<br>Now to start with I am just going to change the port number and IP address, so I can access it from my desktop.  Now in some cases you might not want to do that as you have a proxy in-front of it or you might want to put it on SSL.  As this is just a test through I will just change these:
+<br>
+<pre><code># Kibana is served by a back end server. This controls which port to use.
+server.port: 80
+# The host to bind the server to.
+server.host: "192.168.0.20"</code></pre>
+<br><br>Now We can start kibana and test that it works.
+<br>
+<pre><code>/opt/kibana/bin/kibana
+sudo /opt/kibana/bin/kibana
+  log   [12:02:24.395] [info][status][plugin:kibana] Status changed from uninitialized to green - Ready
+  log   [12:02:24.425] [info][status][plugin:elasticsearch] Status changed from uninitialized to yellow - Waiting for Elasticsearch
+  log   [12:02:24.436] [info][status][plugin:kbn_vislib_vis_types] Status changed from uninitialized to green - Ready
+  log   [12:02:24.441] [info][status][plugin:markdown_vis] Status changed from uninitialized to green - Ready
+  log   [12:02:24.448] [info][status][plugin:metric_vis] Status changed from uninitialized to green - Ready
+  log   [12:02:24.453] [info][status][plugin:spyModes] Status changed from uninitialized to green - Ready
+  log   [12:02:24.456] [info][status][plugin:statusPage] Status changed from uninitialized to green - Ready
+  log   [12:02:24.459] [info][status][plugin:table_vis] Status changed from uninitialized to green - Ready
+  log   [12:02:24.469] [info][listening] Server running at http://192.168.0.20:80
+  log   [12:02:29.501] [info][status][plugin:elasticsearch] Status changed from yellow to yellow - No existing Kibana index found
+  log   [12:02:32.598] [info][status][plugin:elasticsearch] Status changed from yellow to green - Kibana index ready</code></pre>
+<br>Now go to a browser on your desktop and browse to what ever IP and port you set:
+<br><br><img alt="Thumb kibana first time" src="/uploads/bootsy/image/9/large_Kibana-first-time.png">
+<br><br>Now that we can see that its working, like elasticsearch I want it to run as a service.   To do that I found on github through google a script that a lot of people are using, all you do is download it, make it exacutable and set it to run:
+<br><br><pre><code>cd /etc/init.d &amp;&amp; sudo curl -o kibana https://gist.githubusercontent.com/thisismitch/8b15ac909aed214ad04a/raw/fc5025c3fc499ad8262aff34ba7fde8c87ead7c0/kibana-4.x-init
+cd /etc/default &amp;&amp; sudo curl -o kibana https://gist.githubusercontent.com/thisismitch/8b15ac909aed214ad04a/raw/fc5025c3fc499ad8262aff34ba7fde8c87ead7c0/kibana-4.x-default
+sudo chmod +x /etc/init.d/kibana
+sudo update-rc.d kibana defaults 96 9
+sudo service kibana start
+</code></pre><br>Now if we go back to the Kibana webpage, you'll notice that its asking to setup an index pattern, which are used to figure out what index to run the search across. &nbsp;Now because for now I am just going to be using log-stash the default will be fine, the only other problem is I haven't pushed any data into the ElasticSearch yet, so Kibana can not match any mappings. &nbsp;So we will leave that till later once we have some data.

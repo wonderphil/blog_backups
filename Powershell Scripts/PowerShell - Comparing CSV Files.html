@@ -1,0 +1,34 @@
+As a continue on from my last post about exporting data from a Database pre and post a deployment in Octopus, I wanted to extend this to show me any differences in that data that has been exported.<br><br>
+The only problem that is I have exported data from a few different tables and all have different column headings, so with out defining all the column for all the different files, I need to get the column from all the files first.<br><br>
+So I use the <i>Get-Member</i> command to get the a list of things to compare.<br><br> 
+<pre class="line-numbers language-powershell"><code>
+$Tables = $OctopusParameters["ConfigTables"]
+$CompareLocation = $OctopusParameters["Octopus.Action[Pre-Sql Compare].Output.CompareLocation"]
+$Tables = $Tables.replace(" ","").split(",")
+
+Foreach($Table in $Tables){
+
+    $PreFile = Import-Csv -Path "$($CompareLocation)\$($Table)_PreCompare.txt"
+    $PostFile = Import-Csv -Path "$($CompareLocation)\$($Table)_PostCompare.txt"
+
+    $PreCols = $PreFile | Get-Member -MemberType NoteProperty | Select -Expand Name | Sort | % {"$_"}
+    $PostCols = $PostFile | Get-Member -MemberType NoteProperty | Select -Expand Name | Sort | % {"$_"}
+
+    Write-Host "To be safe, checking database colums are the same....."
+    if(Compare-Object $PreCols $PostCols){
+        Throw "Database Columns are not the same! $($PreCols) $($PostCols)"
+    }
+    Else{
+        Write-Host "Comparing Files....."
+        $Result = Compare-Object $PreFile $PostFile -Property $PreCols
+    }
+
+    if($Result -ne $null){
+        Write-Warning "Found Some differences in $($Table)"
+        $Result
+    }
+    Else{
+        Write-host "No differences found in $($Table)"
+    }
+}
+</code></pre>

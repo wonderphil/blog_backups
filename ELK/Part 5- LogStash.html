@@ -1,0 +1,7 @@
+<h1>LogStash</h1>
+Just like Kibana I will install LogStash by adding to the apt-get repo.
+<pre><code>wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+echo "deb http://packages.elastic.co/logstash/2.2/debian stable main" | sudo tee -a /etc/apt/sources.list
+sudo apt-get update &amp;&amp; sudo apt-get install logstash
+</code></pre>
+<br>

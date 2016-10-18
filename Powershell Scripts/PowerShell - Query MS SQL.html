@@ -1,0 +1,85 @@
+<h1>Query SQL using SQL Auth</h1>So I had a situation where I wanted to run a script to export some data from some Config tables before and after doing a deployment through Octopus Deployments.<br><br>As you'll see the first part gets all the&nbsp;variables from Octopus.<br><br>Note the <pre><code class="language-powershell">$Tables = $OctopusParameters["ConfigTables"]</code></pre> as Octopus treats all its variables as strings but as the variable name suggest its going to be a array, so you need to convert it to an array by <pre><code class="language-powershell">$Tables = $Tables.replace(" ", "").split(",")</code></pre><br><br>There are two functions, one to connect to the DB and get all the data and another to write it to a file as a CSV, I do it as a CSV so that if I want to do anything with the&nbsp;data later I can with out to much trouble.<br><br><pre class="line-numbers language-powershell"><code>$SqlServer = $OctopusParameters["SqlServer"]
+$Tables = $OctopusParameters["ConfigTables"]
+$SqlBackupLocation = $OctopusParameters["SqlCompareLocation"]
+$SqlServerPassword = $OctopusParameters["SqlServerPassword"]
+$SqlServerUsername = $OctopusParameters["SqlServerUsername"]
+$PreStep = $OctopusParameters["PreStep"]
+$Release = $OctopusParameters['Octopus.Release.Number']
+$Environment = $OctopusParameters['Octopus.Environment.Name']
+
+$Tables = $Tables.replace(" ","").split(",")
+
+If($Environment -ne "Live"){
+    $Database = "MyDatabase$Environment']"
+}
+Else {
+    $Database = "MyDatabase"<br>}
+
+Function Invoke-SQL {
+    param(
+        $SQLServer,
+        $Database,
+        $SqlCommand,
+        $SqlServerUserName,
+        $SqlServerPassword
+      )
+
+    #First lets create the SQL Connection
+    #This could be done with integrated security as well
+    $SqlConnection = New-Object System.Data.SqlClient.SqlConnection
+    $SqlConnection.ConnectionString = "Server=$SQLServer; Database=$Database; User ID=$SqlServerUserName; Password=$SqlServerPassword;"
+    
+    #Now the SQL command thats to be run
+    $SqlCmd = New-Object System.Data.SqlClient.SqlCommand
+    $SqlCmd.CommandText = $SqlCommand
+    $SqlCmd.Connection = $SqlConnection
+    
+    #Here we actually make the connection and run the command
+    $SqlAdapter = New-Object System.Data.SqlClient.SqlDataAdapter
+    $SqlAdapter.SelectCommand = $SqlCmd
+    
+    #This just creating a container for the data with in the Var, then we fill the container
+    $Data = New-Object System.Data.DataSet
+    $SqlAdapter.Fill($Data)
+    
+    #return data, but don't return it as a table i.e. $data.table[0] or the resulting export to CSV returns something other then your data
+    Return $Data 
+}
+
+Function log-to-file {
+    param( $Contents,
+           $Table,
+           $SqlBackupLocation,
+           $PreStep,
+           $Environment, 
+           $Release)
+
+    If($PreStep -eq 'True'){
+        $file = $Table + "_PreCompare.txt"
+    }
+    Else{
+        $file = $Table + "_PostCompare.txt"
+    }
+    
+    $Date = Get-date -Format ddMMMyy
+    $DatePath = "$SqlBackupLocation\$Environment\$date\$Release"
+    
+    Write-host "If backup location isn't there lets create it"
+    if(-not (Test-path $DatePath)){
+        New-Item -Path $DatePath -ItemType directory
+    }
+    
+    $FullPath = $DatePath + "\" + $File
+    
+    Write-host "Writing data to Text file - $FullPath"
+    $Contents.tables[0] | Export-csv $FullPath -NoTypeInformation
+}
+
+foreach($Table in $Tables){
+    
+    Write-host "Connecting to $SqlServer and exporting all the data from $Table"
+    $Result = Invoke-sql $SqlServer $Database "SELECT * FROM $Table" $SqlServerUsername $SqlServerPassword
+    
+    log-to-file $result $Table $SqlBackupLocation $PreStep $Environment $Release
+}</code>
+</pre>

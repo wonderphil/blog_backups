@@ -1,0 +1,78 @@
+This is the basic powershell script shell that I like to use.  It logs to the event-log instead of logging to screen or file.
+
+<pre class="line-numbers language-powershell"><code>
+&lt;#
+
+.SYNOPSIS
+This is a simple Powershell script to download files from website with basic auth enabled
+
+.DESCRIPTION
+This will download any files it files from the URL and store them locally.
+This will log to event log and not to file!
+
+.PARAMETER Something
+This parameter is for something
+
+.PARAMETER EventSource
+Sets the event type in Event Viewer.
+
+
+.EXAMPLE
+./Some-script.ps1 -Something 'something else' -EventType 'testing'
+
+
+#&gt;
+
+[CmdletBinding()]
+Param (
+
+    [Parameter(Mandatory=$True)]
+    [string]$Something,
+    [Parameter(Mandatory=$false)]
+    [string]$EventSource = "Test Script"
+)
+
+$Log = @()
+if(! $ErroAction){ 
+    $ErrorActionPreference = "Stop"
+}
+
+Function Write-log{
+    param([String]$EventLog, $EventSource, $EventType)    
+    
+    $x = [System.Diagnostics.EventLog]::SourceExists($EventSource) 
+    if (!($x)){ 
+        New-EventLog -LogName "Application" -Source $EventSource
+    }
+
+    Write-EventLog -LogName Application -Source $EventSource -EntryType $EventType -EventID 1 -Message $EventLog
+}
+
+
+Try{
+   
+    $Log += "Starting Script at $(Get-Date) `r`n"
+   # Script does something
+    $Log += "Log details  `r`n"
+    
+
+    $Log += "`r`n Script is stopping at $(Get-date)"
+    $EventType = 'Information'
+
+}
+
+Catch
+{
+    $ErrorMessage = $_.Exception.Message
+    $Log += "There was an error `r`n"
+    $Log += $ErrorMessage
+    $Log += "`r`n Script is stopping at $(Get-date)"
+    $EventType = 'Error'
+}
+
+Finally
+{
+    Write-Log $Log $EventSource $EventType
+}
+
+</code></pre>

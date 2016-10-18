@@ -1,0 +1,86 @@
+<h1>My First Test</h1>
+First we need to setup a Project which is pretty simple. &nbsp;I have everything in a "Repo" folder to make life easier.
+<br><h3><br>Create Skeleton&nbsp;</h3>So from the command prompt run the following commands:
+<br>
+<br><br><pre class="line-numbers language-batch"><code>cd c:\repos
+mkdir facebook
+cd facebook
+selenium-cucumber gen</code></pre>This creates a basic folder&nbsp;<span>skeleton:<br><img alt="Thumb screen shot 2016 09 12 at 174535" src="/uploads/bootsy/image/68/large_Screen_Shot_2016-09-12_at_17.45.35.png"><br><br><br></span><h3>Feature File</h3><span>Lets look at my_first.feature<br>Its&nbsp;written&nbsp;in&nbsp;</span>Gherkin&nbsp;-&nbsp;<a target="_blank" rel="nofollow" href="https://cucumber.io/docs/reference">https://cucumber.io/docs/reference</a><br>Gherkin is&nbsp;<span>plain-text English (or one of 60+ other languages) with a little extra structure. Gherkin is designed to be easy to learn by non-programmers, yet structured enough to allow concise description of examples to illustrate business rules in most real-world domains.<br></span><br>Our first test is to log into facebook, so lets write our first test: ( am using some predefined steps here as well as custom, but I will go through that later)<br>
+<pre class="line-numbers language-gherkin"><code>Feature: Facebook Login
+    As a user I should be able to login into facebook.
+Scenario: I login with valid credential
+    Given I Open "https://www.facebook.com"
+    Then I enter username "me@phildavies.com.au"
+    And I enter password "Some Password"
+    Then I click on element having id "u_0_n"
+    Then I wait 5 seconds
+    Then I should be logged in
+    Then I take screenshot
+
+</code></pre>Now cucumber is really good at this point in helping with writing the steps of your test. &nbsp;If you now run from the project folder cucumber<br>
+<br><br><pre class="line-numbers language-batch"><code>cucumber</code></pre><img alt="Thumb screen shot 2016 09 13 at 104946" src="/uploads/bootsy/image/71/large_Screen_Shot_2016-09-13_at_10.49.46.png"><br><br><ul><li>So we can see from the output in the red the test that run and the scenario</li><li>In the yellow we can see that 1 undefined scenario and 5 undefined&nbsp;steps and this is the&nbsp;<b>important</b>&nbsp;part!</li><li>In the blue is where cucumber steps and and gives you a way of defining those that are undefined</li></ul><br><h3>Step Definitions</h3>So now we copy the suggested steps from above and paste them into /step_definitions/custom_steps.rb<br>
+<pre class="line-numbers language-ruby"><code>require 'selenium-cucumber'
+
+# Do Not Remove This File
+# Add your custom steps here
+# $driver is instance of webdriver use this instance to write your custom code
+
+Given(/^I Open "([^"]*)"$/) do |arg1|
+  step %[I navigate to "#{arg1}"]
+end
+
+
+Then(/^I enter username "([^"]*)"$/) do |arg1|
+  step %[I enter "#{arg1}" into input field having name "email"]
+end
+
+And(/^I enter password "([^"]*)"$/) do |arg1|
+  step %[I enter "#{arg1}" into input field having name "pass"]
+end
+
+Then(/^I wait (\d+) seconds$/) do |n|
+   sleep(n.to_i)
+end
+
+Then(/^I should be logged in$/) do
+  step %[I should see page title as "Facebook"]
+end
+
+Then(/^I take a screenshot$/) do
+    step %[Then take screenshot]
+end</code></pre>I will go through the basic of above, later I will go into detail of each steps and more advanced steps.<br>
+Lets look at the first one<br><pre class="line-numbers language-ruby"><code>Given(/^I Open "([^"]*)"$/) do |arg1|
+  step %[I navigate to "#{arg1}"]
+end</code></pre><br>
+So the first line is matching your "Given" line from my_first.feature file,
+<br>
+<pre class="line-numbers language-gherkin"><code>Given I Open "https://www.facebook.com"</code></pre><br>
+Its using the regex to match "<a target="_blank" rel="nofollow" href="https://www.facebook.com">https://www.facebook.com</a>" and then it pass that as "arg1" to the step.<br>
+The step in the case is using one of selenium-cucumbers canned steps. - <a target="_blank" rel="nofollow" href="https://github.com/selenium-cucumber/selenium-cucumber-ruby/blob/master/doc/canned_steps.md#progress-steps">https://github.com/selenium-cucumber/selenium-cucumber-ruby/blob/master/doc/canned_steps.md#progress...</a><br>I am have to say though I have had a couple of issues with these canned options, but hey I'm learning this as we go my-self.<br>So what does this do, well simple it tells selenium to go off and open a broswer and open the web page for facebook.<br>
+Ok Lets look at a custom step, and I used a custom step because I couldn't get the canned step to work.<br>class="line-numbers language-ruby"
+<br><pre class="line-numbers language-ruby"><code>
+Then(/^I wait (\d+) seconds$/) do |n|
+   sleep(n.to_i)
+end</code></pre>
+So again its matching to the step in my_first.feature file, its using regex to find the number, in this case 5, it passes it to the step as n.  Now the step is just a simple ruby that tells the process to pause(sleep) for n, which its converting the string 5 to an integer.  <br><br><b>Simple!</b><br>
+<br>Now if we run the test again, we should get:
+ <br>
+ <ul>
+ <li>A browser window open</li>
+ <li>we should see the user name be enter</li>
+ <li>Then the password</li>
+ <li>Then it should open to facebook's news feed</li>
+ <li>plus we should also get a new file under the screenshots<br>
+ <img alt="Thumb screen shot 2016 09 13 at 111539" src="/uploads/bootsy/image/74/Screen_Shot_2016-09-13_at_11.15.39.png"><br></li>
+ <li>and when you look at the command prompt you will see that all the test run and passed and how long it took<br>
+ <img alt="Thumb screen shot 2016 09 13 at 111305" src="/uploads/bootsy/image/73/Screen_Shot_2016-09-13_at_11.13.05.png"><br></li>
+ </ul>
+ <br>The only other two things I want to show in this post is how to generate a nice little report. Simply by changing your command to:<br>
+<pre class="line-numbers language-batch"><code>cucumber –f html –o test_result.html</code></pre><br>
+<br>Now this generates a nice little HTML page in the root of your project that tells you all the details of the test:<br>
+<img alt="Thumb screen shot 2016 09 13 at 112228" src="/uploads/bootsy/image/75/large_Screen_Shot_2016-09-13_at_11.22.28.png"><br>
+<br>Next one is how to run the test in a different browser, so far I have run these test in Chrome, so if I change my command to:<br>
+<pre class="line-numbers language-batch"><code>cucumber BROWSER=browser_name -f html -o test_result.html</code></pre><br>
+<br>Changing "browser_name to either one of the following (must have it installed of course)<br>
+<ul><li>ff - this is firefox</li><li>chrome</li><li>ie</li><li>safari</li><li>opera</li></ul>
+<h3>Summary</h3>So now we have our first test and it works, my only concerns about what we have above is, how do we re-use that against different applications, how do we test different user account, how do we tested for failed logins and the biggest one for me, how do I hide the password! &nbsp;I will go into this in later post.<br><br>

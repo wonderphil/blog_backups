@@ -1,0 +1,34 @@
+<h1>Prerequisites</h1>
+<h2>Hardware:</h2>
+<h3>Server:</h3>
+<div>
+2gb ram and 2 cores.<br><br>
+</div>
+<div>
+<b>Notes:</b>
+</div>
+<div><u>Elasticsearch</u>
+</div>
+<div>CPU, as this is just a PoC so I can test what disk requirements are going to be like, I have just setup a VM with 2 cores. &nbsp;To allow better concurrency the more cores the better.<br><br>
+</div>
+<div>Elasticsearch loves it memory, just like old people with little memory it will come to a stop and take forever to do anything. Elastic says 64GB is on the dollar. Again as this is just a test that I am running on VM's off my desktop I am just running with 2GB, that plus I am not expecting to do huge queries, sorts or aggregations.
+</div>
+<div>
+<br>Hard drives, this is the all important part of a storage service. I haven't found anywhere to give a good indication on disk sizing, thus why I am testing before going to production. &nbsp;Now if you are lucky enough to be in a cloud environment where adding disks isn't a problem, then space shouldn't be an issue. <br><br>
+The issue is always going to be I/O.  So the faster the disk the better, SSD the best! Elastic does say through try not to use network-attached (NAS) storage, not to be confused with SAN's<br><br>
+</div>
+<h2>Software:</h2>
+<h3>OS:</h3>
+<div>
+Ubuntu 14.04 with root access<br><br>
+</div>
+<h3>SSH:</h3>
+<div>
+if like me you just have Ubuntu installed as basic as it comes then you probably need to install OpenSSH Server.<br><br>
+</div>
+<pre><code class="language-bash">sudo apt-get install openssh-server
+</code></pre><h3>Java:<br></h3>
+<div>First we need to add Oracle Java PPA to apt, then update apt, lastly install Java</div><pre class="line-numbers language-bash"><code>sudo add-apt-repository -y ppa:webupd8team/java
+sudo apt-get update
+sudo apt-get -y install oracle-java8-installer
+</code></pre>

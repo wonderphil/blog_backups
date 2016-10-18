@@ -1,0 +1,21 @@
+Simple Powershell script<br><br>
+<pre class="line-numbers language-powershell"><code>
+$apppools = Get-ChildItem -Path 'IIS:\AppPools' | Select-Object Name,State,@{
+    name = 'Applications'
+    expression = {
+        $AppPool = $_.Name
+        Get-webconfigurationproperty "/system.applicationHost/sites/site/application[@applicationPool=`'$AppPool`'and @path='/']/parent::*" machine/webroot/apphost -name name | ForEach-Object {
+            $_.Value
+        }
+        Get-webconfigurationproperty "/system.applicationHost/sites/site/application[@applicationPool=`'$AppPool`'and @path!='/']" machine/webroot/apphost -name path | ForEach-Object {
+            $_.Value
+        } | Where-Object {$_ -ne '/'}
+    }
+}
+
+foreach($appPool in $apppools){
+    if($appPool.Applications -eq $null){
+        Remove-WebAppPool $appPool.name
+    }
+}
+</code></pre>

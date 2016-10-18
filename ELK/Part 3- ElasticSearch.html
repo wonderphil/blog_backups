@@ -1,0 +1,54 @@
+<h1>Elasticsearch</h1>
+<h3>Some Understanding</h3>
+<br>
+I won't go to in-depth about everything for Elasticsearch, I am guessing most people that read this will have the basic understanding.  If you want more details just got to: 
+<br>
+<a target="_blank" rel="nofollow" href="http://www.elastic.co/downloads">http://www.elastic.co/downloads</a>
+<br><h3>Clusters, Nodes, Indexers, Types:</h3>
+<br>
+A cluster can contain one node or lots of nodes.  By default if multiple node is on the same network and are discoverable they will automatically join the same cluster called "elasticsearch".  This name can be configure to anything, for example you might have different clusters for Dev "logging-dev", or for production "logging-prod". 
+<br><br>
+For nodes, at startup the name will be named by default a random Marvel character name. 
+<br><br>
+Indexers are like tables in SQL DB's, you can have many Indexers in a cluster.  An index is identified by a name that is all lowercase and the name is referred to when performing tasks like updates, search and deletes.  Within each index you can define types, a type is just a set of documents which have similar fields. 
+<br><br>
+I won't go into shards or replicas, if you want to know more just follow the above link. 
+<br><h3>Installing Elasticsearch</h3>
+<br>
+I will be assuming that the pre-requirements have be meet, if not, please read the last post. 
+<br><br>
+First you need to download and install the package from: <a target="_blank" rel="nofollow" href="http://www.elastic.co/downloads">www.elastic.co/downloads</a><br><br><pre><code class="language-bash">curl -L -O https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.1.1/elasticsearch-2.1.1.deb
+sudo dpkg -i elasticsearch-2.1.1.deb
+</code></pre>
+<br>Once the package is installed we can configure and set Elasticsearch to start on startup:<br>
+This will set startup of elasticsearch on startup of server<br><br>
+<pre><code class="language-bash">sudo update-rc.d elasticsearch defaults 95 10</code></pre>
+<br>
+To configure you have 3 different files:<br><br><pre><code class="language-bash">/etc/elasticsearch/elasticsearch.yml
+</code></pre>
+This configuration file is where we can change cluster name, node name and other things like network details.  In this file I change the Cluster name and the node name, as not to join any other Elasticsearch clusters on the network.<br><br><pre><code class="language-bash">/etc/elasticsearch/logging.yml
+</code></pre>
+As the name of the file stats, this is the logging configuration file.  For this example I will leave as is.<br><br><pre><code class="language-bash">/etc/default/elasticsearch
+</code></pre>
+In this config file you can change paths, users, heap size, memory lock to name a few.  For this example I will leave it as is.
+<br><br><br>
+Once configured, re-start the service
+<br>
+<pre><code class="language-bash">sudo service elasticsearch restart</code></pre>
+<br>
+To make sure elasticsearch is running correctly run a simple curl command:&nbsp;<pre><code class="language-bash">curl localhost:9200
+
+{
+  "name" : "node-1",
+  "cluster_name" : "test-elk",
+  "version" : {
+    "number" : "2.1.1",
+    "build_hash" : "40e2c53a6b6c2972b3d13846e450e66f4375bd71",
+    "build_timestamp" : "2015-12-15T13:05:55Z",
+    "build_snapshot" : false,
+    "lucene_version" : "5.3.1"
+  },
+  "tagline" : "You Know, for Search"
+}</code></pre>
+<br>
+How easy was that.  Just think if you wanted to run this in say AWS and create an AMI and autoscale you elasticsearch cluster it wouldn't be very hard and you'd have a very powerful little setup very quickly.

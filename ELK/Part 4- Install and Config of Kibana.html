@@ -1,0 +1,26 @@
+<h1>Kibana</h1>
+What is Kibana, simply it is just a UI front end that displays your data from elasticsearch.  This allows sophisticated analytics in a very simple and easy way.<br><br>
+Below is a Kibana dashboard that I have found on google to give an example of what could be.<br><br>
+<img alt="Thumb large kibana 3 pfsense firewall dashboard 2" src="/uploads/bootsy/image/10/large_Kibana_3_pfSense_Firewall_dashboard_2.png"><br><br>
+<h2>Installing Kibana</h2>
+This is an updated version of installing since my last post, before I had installed Version 4.3, this will show you how to install version 4.4<br><br>
+First thing first add Public signing key and definition to apt-get repository
+<pre class="line-numbers language-bash"><code>wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+echo "deb http://packages.elastic.co/kibana/4.4/debian stable main" | sudo tee -a /etc/apt/sources.list</code></pre><br>
+Then we do the stand apt-get update and install
+<pre class="line-numbers language-bash"><code>sudo apt-get update
+sudo apt-get install kibana</code></pre><br>
+Now here comes the difference between version 4.3 and version 4.4, in version 4.3 you had to download someones init script or write your own to run as daemon.  In version 4.4 this has been done for you, so now you just update the Kibana startup defaults.<br>
+<pre class="line-numbers language-bash"><code>sudo update-rc.d kibana defaults 95 10</code></pre>
+<br>
+Next step is to configure Kibana, we can do this by editing the yml configuration file: 
+<pre class="line-numbers language-bash"><code>sudo nano /opt/kibana/config/kibana.yml</code></pre>
+<br>
+Now to start with I am just going to change the port number and IP address, so I can access it from my desktop. Now in some cases you might not want to do that as you have a proxy in-front of it or you might want to put it on SSL. As this is just a test through I will just change these: 
+<pre class="line-numbers language-bash"><code># Kibana is served by a back end server. This controls which port to use.
+server.port: 8080
+# The host to bind the server to.
+server.host: "0.0.0.0"
+</code></pre>As as a general rule processes running without root privileges cannot bind to ports below 1024, thus I set it to 8080.<br><br>
+Don't forgot to restart once configured.
+<pre class="language-bash"><code>sudo service kibana restart</code></pre>Once restarted if you go to the ip on port 8080 in a browser you should see:<br><br><img alt="Thumb screen shot 2016 02 27 at 012828" src="/uploads/bootsy/image/11/Screen_Shot_2016-02-27_at_01.28.28.png"><br>Now that Kibana webpage is up, you'll notice that its asking to setup an index pattern, which are used to figure out what index to run the search across.  Now because for now I am just going to be using log-stash the default will be fine, the only other problem is I haven't pushed any data into the ElasticSearch yet, so Kibana can not match any mappings.  So we will leave that till later once we have some data.

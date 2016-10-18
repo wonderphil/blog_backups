@@ -1,0 +1,14 @@
+<pre class="line-numbers language-powershell">
+<code>
+$username = "username" 
+$password = "password" 
+$ie = New-Object -com InternetExplorer.Application 
+$ie.visible=$false
+$ie.navigate("Url") 
+while($ie.ReadyState -ne 4) {start-sleep -m 100} 
+$ie.document.getElementById("username").value= "$username" 
+$ie.document.getElementById("pass").value = "$password" 
+$ie.document.getElementById("loginform").submit()
+start-sleep 20 
+$ie.Document.body | Out-File -FilePath c:\web.txt 
+</code></pre>
