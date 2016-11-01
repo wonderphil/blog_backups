@@ -1,0 +1,88 @@
+<h1><img class="fr-draggable fr-dib" src="/uploads/blogs/terraform_hashicorp/intro_to_hashicoprs_terraform/images.png" style="width: 300px;">Terraform by HashiCorp</h1><p><br></p><h2>What is Terraform?</h2><p>So basically it Infrastructure-as-Code and as anyone doing or wanting to do DevOps, then this is what you want to be doing it. &nbsp;Coming from a Sys-admin background where we were building up machines by hand, to moving into DevOps and doing a lot of AWS Cloud formation which was Infrastructure-as-Code. At that point I was moving away from caring for each individual server(pets), to the attitude of just re-build it(cattle), which was great. &nbsp;If you don&#39;t know the pets vs cattle theory, then the below image will help explain:</p><p><img class="fr-dib fr-draggable" src="/uploads/blogs/terraform_hashicorp/intro_to_hashicoprs_terraform/servers_pets_or_cattle.jpg" style="width: 600px;"></p><p>So for the move to cattle you need to have infra-as-code, which was great since I moved to Cloud formation, the only problem was if I wanted to move away from AWS to another provider like Azure, GCloud or something then I needed to re-write it all over again in that providers specific language. &nbsp;Enter Terraform allowing for me to write config for almost any provider I wanted!</p><p>So I am not going to re-write what is already out there so I answer this by taking it straight from the horse mouth:</p><blockquote><p>Terraform is a tool for building, changing, and versioning infrastructure safely and efficiently. Terraform can manage existing and popular service providers as well as custom in-house solutions.</p><p>Configuration files describe to Terraform the components needed to run a single application or your entire datacenter. Terraform generates an execution plan describing what it will do to reach the desired state, and then executes it to build the described infrastructure. As the configuration changes, Terraform is able to determine what changed and create incremental execution plans which can be applied.</p><p>The infrastructure Terraform can manage includes low-level components such as compute instances, storage, and networking, as well as high-level components such as DNS entries, SaaS features, etc.</p></blockquote><p><a href="https://www.terraform.io/intro/index.html">https://www.terraform.io/intro/index.html</a></p><p><br></p><h2>How to Install Terraform?</h2><p>How easy could this be, I am running it on my mac and its as simple as downloading the binary file and setting a PATH to it. &nbsp;Simple right!</p><p>To download the latest goto: <a href="https://www.terraform.io/downloads.html">https://www.terraform.io/downloads.html</a></p><p>For me on the mac I just added to my <code class="  language-bash">~/.bash_profile</code></p><pre class="  language-bash"><code class="  language-bash"><span class="token function">export</span> PATH<span class="token operator">=</span><span class="token variable">$PATH</span>:/etc/terraform</code></pre><p>Then source you bash profile and run <code class="  language-bash">terraform</code> making sure that it displays the help. If it doesn&#39;t you haven&#39;t pointed the PATH to the correct location or you haven&#39;t sourced your bash session.</p><p>Don&#39;t worry if you are on Windows this can be done as well, just set you path the windows way.</p><p><br></p><h2>Getting Started</h2><p>I would say after this go through the getting started document on the <a href="https://www.terraform.io/intro/getting-started/build.html" target="_blank">Terraform site&nbsp;</a>for a full understanding, I am going to do a really basic example to get you going.</p><p>For this example I am going to create a VPC in AWS with the IP address range (CIDR) of 192.168.0.0/16 and give it a name and a few tags.</p><h3>Configure vpc.tf</h3><p>First I created a example folder in my repos folder and this is where I will work from.</p><pre class="line-numbers  language-bash"><code class="  language-bash"><span class="token function">mkdir</span> ~/repos/example_terraformcd ~/repos/example_terraform</code></pre><p>Now that I am in that folder I am going to create a &quot;vpc.tf&quot; file, this is the config file that will create the VPC for me when I run it. In Side that file I add the following:</p><p><br></p><pre class="line-numbers  language-json"><code>provider &quot;aws&quot; {
+&nbsp; access_key = &quot;ACCESS_KEY_HERE&quot;
+&nbsp; secret_key = &quot;SECRET_KEY_HERE&quot;
+&nbsp; region &nbsp; &nbsp; = &quot;eu-west-1&quot;
+}
+
+resource &quot;aws_vpc&quot; &quot;my_vpc&quot; {
+&nbsp; cidr_block = &quot;192.168.0.0/16&quot;
+&nbsp;tags {
+&nbsp; &nbsp; Name = &quot;my_vpc&quot;
+&nbsp; &nbsp; owner = &quot;Phil Davies&quot;
+&nbsp; } 
+} 
+</code></pre><p><br></p><p>So what does that do? &nbsp;Well there is two main parts, but first one note, this file is just json.</p><p>First part &quot;provider&quot; block - This is used to configure the Provider, in this case AWS, so here we enter the access and secret keys and yes I know I am hard coding it and thats not good, but for this as its an example I don&#39;t really care. &nbsp;Just make sure you don&#39;t commit to github with your keys. &nbsp;The other config I am using is the region that I am wanting to build my VPC.</p><p>For AWS you can get more Configuration from <a href="https://www.terraform.io/docs/providers/aws/index.html" target="_blank">here</a>.</p><p>The second block is the &quot;resource&quot; - The resource is in this case the VPC that we are trying to create, its prefixed with two strings:</p><ol><li>&quot;aws_vpc&quot; is the resource type, this prefix of the type ties back to the provide that we have at the start of the file</li><li>&quot;my_vpc&quot; is the resource name</li></ol><p>Once you open the resource, the rest is just configuration of that resource it-self, now for our example I am just setting the CIDR block, and the Tags. &nbsp;Move configuration can be found <a href="https://www.terraform.io/docs/providers/aws/r/vpc.html" target="_blank">here</a>.</p><h3>Execute Plan</h3><p>Now that we have everything we can test our configuration by running a terraform plan, a plan is just a way for you to see what tarraform would be changing. &nbsp;So if I run <code class="  language-bash">terraform plan</code> it will run the execution plan and look like this:</p><p><br></p><pre class="language-json"><code>$ terraform plan
+....
++ aws_vpc.my_vpc
+&nbsp; &nbsp; cidr_block: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&quot;192.168.0.0/16&quot;
+&nbsp; &nbsp; default_network_acl_id: &nbsp; &nbsp;&quot;&lt;computed&gt;&quot;
+&nbsp; &nbsp; default_route_table_id: &nbsp; &nbsp;&quot;&lt;computed&gt;&quot;
+&nbsp; &nbsp; default_security_group_id: &quot;&lt;computed&gt;&quot;
+&nbsp; &nbsp; dhcp_options_id: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &quot;&lt;computed&gt;&quot;
+&nbsp; &nbsp; enable_classiclink: &nbsp; &nbsp; &nbsp; &nbsp;&quot;&lt;computed&gt;&quot;
+&nbsp; &nbsp; enable_dns_hostnames: &nbsp; &nbsp; &nbsp;&quot;&lt;computed&gt;&quot;
+&nbsp; &nbsp; enable_dns_support: &nbsp; &nbsp; &nbsp; &nbsp;&quot;&lt;computed&gt;&quot;
+&nbsp; &nbsp; instance_tenancy: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&quot;&lt;computed&gt;&quot;
+&nbsp; &nbsp; main_route_table_id: &nbsp; &nbsp; &nbsp; &quot;&lt;computed&gt;&quot;
+&nbsp; &nbsp; tags.%: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&quot;2&quot;
+&nbsp; &nbsp; tags.Name: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &quot;my_vpc&quot;
+&nbsp; &nbsp; tags.owner: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&quot;Phil Davies&quot;
+
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+</code></pre><p><br></p><p>This just allows us to check what the script is going to do before we do it.</p><h3>Apply Plan</h3><p>Now we are happy with the configuration, we want to apply it, simple,<code class="language-bash">terraform apply</code></p><p><br></p>
+<pre class="language-json"><code>$ terraform apply
+aws_vpc.my_vpc: Creating...
+&nbsp; cidr_block: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&quot;&quot; =&gt; &quot;192.168.0.0/16&quot;
+&nbsp; default_network_acl_id: &nbsp; &nbsp;&quot;&quot; =&gt; &quot;&lt;computed&gt;&quot;
+&nbsp; default_route_table_id: &nbsp; &nbsp;&quot;&quot; =&gt; &quot;&lt;computed&gt;&quot;
+&nbsp; default_security_group_id: &quot;&quot; =&gt; &quot;&lt;computed&gt;&quot;
+&nbsp; dhcp_options_id: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &quot;&quot; =&gt; &quot;&lt;computed&gt;&quot;
+&nbsp; enable_classiclink: &nbsp; &nbsp; &nbsp; &nbsp;&quot;&quot; =&gt; &quot;&lt;computed&gt;&quot;
+&nbsp; enable_dns_hostnames: &nbsp; &nbsp; &nbsp;&quot;&quot; =&gt; &quot;&lt;computed&gt;&quot;
+&nbsp; enable_dns_support: &nbsp; &nbsp; &nbsp; &nbsp;&quot;&quot; =&gt; &quot;&lt;computed&gt;&quot;
+&nbsp; instance_tenancy: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&quot;&quot; =&gt; &quot;&lt;computed&gt;&quot;
+&nbsp; main_route_table_id: &nbsp; &nbsp; &nbsp; &quot;&quot; =&gt; &quot;&lt;computed&gt;&quot;
+&nbsp; tags.%: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&quot;&quot; =&gt; &quot;2&quot;
+&nbsp; tags.Name: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &quot;&quot; =&gt; &quot;my_vpc&quot;
+&nbsp; tags.owner: &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&quot;&quot; =&gt; &quot;Phil Davies&quot;
+aws_vpc.my_vpc: Creation complete
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+The state of your infrastructure has been saved to the path
+below. This state is required to modify and destroy your
+infrastructure, so keep it safe. To inspect the complete state
+use the `terraform show` command.
+
+State path: terraform.tfstate
+</code></pre>
+<p><br></p><p>Now if you go to your AWS console and have a look at VPC&#39;s you should see your VPC that you have created:</p><p><img class="fr-dib fr-draggable" src="/uploads/blogs/terraform_hashicorp/intro_to_hashicoprs_terraform/Screen_Shot_2016-11-01_at_3.06.57_pm.png" style="width: 1020px;"></p><p>And there you go you now have your first terraform configuration.</p><h3>Show Configuration</h3><p>The great thing is you can do <code class=" language-bash">terraform show</code> and it will show you all the details that terraform exports on the recourses that have been built:</p><p><br></p><pre class="language-bash">$ terraform show
+aws_vpc.my_vpc:
+&nbsp; id = vpc-cd92f9a9
+&nbsp; cidr_block = 192.168.0.0/16
+&nbsp; default_network_acl_id = acl-d52404b1
+&nbsp; default_route_table_id = rtb-bb1f22df
+&nbsp; default_security_group_id = sg-023ee164
+&nbsp; dhcp_options_id = dopt-f944b59c
+&nbsp; enable_classiclink = false
+&nbsp; enable_dns_hostnames = false
+&nbsp; enable_dns_support = true
+&nbsp; instance_tenancy = default
+&nbsp; main_route_table_id = rtb-bb1f22df
+&nbsp; tags.% = 2
+&nbsp; tags.Name = my_vpc
+&nbsp; tags.owner = Phil Davies<code>
+</code></pre><p><br></p><p><br></p><h3>Destroy Configuration</h3><p>Now that I am done with this example I can run the terraform destroy command to remove everything I have just created:</p><pre class=" language-bash">$ terraform destroy
+Do you really want to destroy?
+&nbsp; Terraform will delete all your managed infrastructure.
+&nbsp; There is no undo. Only &#39;yes&#39; will be accepted to confirm.
+
+&nbsp; Enter a value: yes
+
+aws_vpc.my_vpc: Refreshing state... (ID: vpc-0797fc63)
+aws_vpc.my_vpc: Destroying...
+aws_vpc.my_vpc: Destruction complete
+
+Destroy complete! Resources: 1 destroyed.<code class=" language-bash">
+</code></pre><p><br></p>
