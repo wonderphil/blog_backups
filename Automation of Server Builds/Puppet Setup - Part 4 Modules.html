@@ -1,0 +1,119 @@
+<p style=""><img class="fr-dib fr-draggable" src="/uploads/blogs/automation_of_server_builds/puppet_setup_part_4_modules/puppet.png" style="width: 300px;"></p>
+
+<h1>Puppet Modules</h1>
+
+<blockquote>
+
+	<p>Modules<span>&nbsp;</span>are self-contained bundles of code and data. You can download pre-built<span>&nbsp;</span>modules<span>&nbsp;</span>from the<span>&nbsp;</span>PuppetForge or you can write your own<span>&nbsp;</span>modules. Nearly all<span>&nbsp;</span>Puppet<span>&nbsp;</span>manifests belong in<span>&nbsp;</span>modules. The sole exception is the main site.pp manifest, which contains site-wide and node-specific code.<sup>1</sup></p>
+</blockquote>
+
+<h3>Generation</h3>
+
+<p>Puppet modules are stored on the puppet master and are really quick simple to add, in this example we will generate one with the <code>puppet module generate</code> command. &nbsp;So we will generate a module just to show how it happens, from the <code>../environments/production/modules</code> folder run the following command:</p><pre class="language-bash"><code>puppet modules generate pd-module</code></pre>
+
+<p>This command will kick off a small set of questions, you can either accept the defaults, leave it blank or add something:</p>
+
+<p>In red the command, in yellow the questions, in blue confirmation of the questions and answers&nbsp;</p>
+
+<p><img class="fr-dib fr-draggable" src="/uploads/blogs/automation_of_server_builds/puppet_setup_part_4_modules/Screen_Shot_2016-11-04_at_10.26.02_am.png" style="width: 700px;"></p>
+
+<h3>Structure</h3>
+
+<p>So now lets go through the modules structure, so we can understand whats in there. &nbsp;The module folder is the name of the module with 7 other folders under it:&nbsp;<img class="fr-dib fr-draggable" src="/uploads/blogs/automation_of_server_builds/puppet_setup_part_4_modules/Screen_Shot_2016-11-04_at_10.26.35_am.png" style="width: 800px;"></p>
+
+<p>Now from the above you can see that our command has only generated 3 folders, manifests, spec and tests. &nbsp;The other folders that can be in modules are files, templates, lib and facts.d .</p>
+
+<p><strong>manifest</strong> folder is where you would put and code that is unique to the module including classes, resource declarations and variables. All the modules include a <code>init.pp</code> file that is in the manifests folder, this file includes a empty class declaration for the module name class. &nbsp;The init.pp manifest is automatically loaded and means we can call the class in our nodes.pp file.</p>
+
+<p><strong>files</strong> folder contains files that you wish to push to the nodes, these are normally static files that don&#39;t change, maybe config files or something else.</p>
+
+<p><strong>templates</strong> folder contains templates of files that contain mixed static and dynamic content. The dynamic content can be modified by custom variables or facts.</p>
+
+<p><strong>lib</strong> folder contains custom facts, custom facts are ruby code.</p>
+
+<p><strong>facts.d</strong> folder contains external facts, these are similar to custom facts in the lib folder but they are not just ruby, you can use any scripting language or executables.</p>
+
+<p><strong>test/spec</strong> folders, well anyone that has done any ruby or other programing will know that these are for unit tests and in this case are again in ruby.</p>
+
+<h3>Customization</h3>
+
+<p style="">So for this example I want to create a module that installs all the requirements of Ruby on Rails on a Ubuntu box, now for this I am just following the setup steps from <a href="https://gorails.com/setup/ubuntu/16.04">https://gorails.com/setup/ubuntu/16.04</a>, this is good site for different setup requirements for different OS&#39;s. &nbsp;Now I am sure there is already a module written to do all of this, but I just want to use this as an example, we will use puppet forge in this to do some of the work though.</p>
+
+<p>First thing we want to do is generate the module, remember do this from the <code>environments/production/modules</code> folder:</p><pre class="language-bash"><code>puppet module generate pd-ror</code></pre>
+
+<p>&nbsp;Then in the <code>pd-ror/manifests/init.pp</code> file add the following to the <code>ror</code> class:</p><pre class="language-bash line-numbers" style=""><code>class ror {
+$ruby = [&#39;git-core&#39;, &#39;curl&#39;, &#39;zlib1g-dev&#39;, &#39;build-essential&#39;, &#39;libssl-dev&#39;, &#39;libreadline-dev&#39;, &#39;libyaml-dev&#39;, &#39;libxml2-dev&#39;, &#39;libxslt1-dev&#39;, &#39;libcurl4-openssl-dev&#39;, &#39;python-software-properties&#39;, &#39;libffi-dev&#39;]
+&nbsp; package { $ruby:
+&nbsp; &nbsp; ensure =&gt; &#39;installed&#39;,
+&nbsp; }
+}</code></pre>
+
+<p>Next we want to install the rbenv environment manager, so for this we are going to use a module from <a href="https://forge.puppet.com">https://forge.puppet.com</a>, its not a supported one and at the time of writing this there wasn&#39;t a supported module. &nbsp;Supported modules are just modules that Puppet labs will support, as forge is a community based anyone can upload there packages for use by others.</p>
+
+<p>So on the puppet master again, we go to the modules path /etc/puppet/environments/production and run the following command to install the module I want to use, for information on the module go to <a href="https://forge.puppet.com/jdowning/rbenv">https://forge.puppet.com/jdowning/rbenv</a></p><pre class="language-bash"><code>puppet module install jdowning-rbenv --modulepath /etc/puppet/environments/production/modules/</code></pre>
+
+<p>Now that this is installed we go back to the <code>pd-ror/manifests/init.pp</code> file add the following to the <code>ror</code> class:</p><pre class="language-bash line-numbers"><code>class ror {</code>
+<code>&nbsp; $ruby = [&#39;git-core&#39;, &#39;curl&#39;, &#39;zlib1g-dev&#39;, &#39;build-essential&#39;, &#39;libssl-dev&#39;, &#39;libreadline-dev&#39;, &#39;libyaml-dev&#39;, &#39;libxml2-dev&#39;, &#39;libxslt1-dev&#39;, &#39;libcurl4-openssl-dev&#39;, &#39;python-software-properties&#39;, &#39;libffi-dev&#39;]
+&nbsp; package { $ruby:
+&nbsp; &nbsp; ensure =&gt; &#39;installed&#39;,
+&nbsp; }</code>
+
+&nbsp; class { &#39;rbenv&#39;: }
+&nbsp; rbenv::plugin { [ &#39;sstephenson/ruby-build&#39; ]: }
+&nbsp; rbenv::build { &#39;2.3.1&#39;: global =&gt; true }
+&nbsp; rbenv::gem { &#39;bundler&#39;: ruby_verison =&gt; &#39;2.3.1&#39; }
+
+<code>}</code></pre>
+
+<p>All these 4 lines are doing are firstly installing rbenv, then installing the ruby build plug in, installing ruby version 2.3.1, setting it to the global interpreter and lastly installing gem bundler.</p>
+
+<p style="">Now we are going to add another Puppet module, this one is a Gem provider for puppet, allowing us to install gems.</p><pre class="language-bash" style=""><code>puppet module install puppetlabs-pe_gem --modulepath /etc/puppet/environments/production/modules/</code></pre>
+
+<p style="">Now with that installed we can add the next part to our class:</p><pre class="language-bash line-numbers" style=""><code>class ror {</code>
+<code>&nbsp; $ruby = [&#39;git-core&#39;, &#39;curl&#39;, &#39;libreadline-dev&#39;, &#39;libxml2-dev&#39;, &#39;libxslt1-dev&#39;, &#39;libcurl4-openssl-dev&#39;, &#39;python-software-properties&#39;]
+&nbsp; package { $ruby:
+&nbsp; &nbsp; ensure =&gt; &#39;installed&#39;,
+&nbsp; }</code>
+
+&nbsp; class { &#39;rbenv&#39;: }
+&nbsp; rbenv::plugin { [ &#39;sstephenson/ruby-build&#39; ]: }
+&nbsp; rbenv::build { &#39;2.3.1&#39;: global =&gt; true }
+&nbsp; &nbsp; 
+&nbsp; package { &#39;rails&#39;:
+&nbsp; &nbsp; ensure =&gt; present,
+&nbsp; &nbsp; provider =&gt; pe_gem,
+&nbsp; &nbsp; install_options =&gt; &#39;-v 4.2.6&#39;,
+&nbsp; }
+
+<code>}</code></pre>
+
+<p>
+	<br>
+</p>
+
+<p style="">
+	<br>
+</p>
+
+<p>
+	<br>
+</p>
+
+<p>
+	<br>
+</p>
+
+<p>
+	<br>
+</p>
+
+<p>&nbsp;</p>
+
+<p>
+	<br>
+</p>
+
+<p>&nbsp;</p>
+
+<p><sup>1</sup>
+	<a href="https://docs.puppet.com/puppet/latest/reference/modules_fundamentals.html">https://docs.puppet.com/puppet/latest/reference/modules_fundamentals.html</a></p>
