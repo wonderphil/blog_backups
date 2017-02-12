@@ -24,10 +24,9 @@ Now everyone should be using some sort of source code, so before we go to much f
 I also Like to install Git completion, which is helpful<br>
 <pre class="line-numbers language-bash"><code>brew install bash-completion</code></pre>
 <br>For Git completion, you also need to add the following to your bash profile file <code>~/.bash_profile</code>
-<br><pre class="line-numbers language-bash">if [ -f $(brew --prefix)/etc/bash_completion ]; then
+<br><pre class="line-numbers language-bash"><code>if [ -f $(brew --prefix)/etc/bash_completion ]; then
     . $(brew --prefix)/etc/bash_completion
-  fi
-</pre>
+  fi</code></pre>
 <br>Now we configure Git locally with your name and email address:
 <br><pre class="line-numbers language-bash"><code>git config --global user.name "Your Name Here"
 git config --global user.email "your_email@example.com"</code></pre>
@@ -63,5 +62,5 @@ ln -s /path/to/app</code></pre>
 <h2>Installing Postgresql DB - Optional</h2>
 <br>
 Now some might call this over kill and this is optional, but I like to install the same DB in my dev environment as whats in my production evironment.  So here I will install Postgresql.  In recent times Postgresql has released a Postgres.app, which makes it nice and easy to install the server on your mac - <a target="_blank" rel="nofollow" href="http://postgresapp.com/">http://postgresapp.com/</a>
-<br>Now because I like to use the command line tools as well I just add the following line to my bash profile <code class="language-bash">~/.bash_profile>
+<br>Now because I like to use the command line tools as well I just add the following line to my bash profile <code class="language-bash">~/.bash_profile</code>
 <br><pre class="line-numbers language-bash"><code>export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin</code></pre>
